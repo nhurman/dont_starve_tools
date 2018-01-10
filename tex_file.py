@@ -129,7 +129,7 @@ def read_file(data: memoryview) -> TexFile:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description='Utility to parse `Don\'t Starve` texture (.ksh) files.',
+        description='Utility to parse `Don\'t Starve` texture (.tex) files.',
         epilog='If a mipmap index is not provided, it will list the mipmaps.'
     )
     parser.add_argument('mode', choices=['r', 'w'],

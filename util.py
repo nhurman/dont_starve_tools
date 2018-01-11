@@ -56,6 +56,8 @@ class Printable:
     """
     Helper class to somewhat print an object's value based on its attribs
     """
+    __noprint__ = []
+
     def __repr__(self) -> str:
         out = {}
         for k in dir(self):
@@ -73,6 +75,11 @@ class Printable:
             def default(self, o):
                 if type(o) == memoryview:
                     return o.tobytes().decode('utf-8')
+                if isinstance(o, Printable):
+                    return {
+                        k:v for k,v in o.__dict__.items()
+                        if k not in o.__noprint__
+                    }
                 return o.__dict__
         return Encoder(**kwargs).encode(self)
 

@@ -127,9 +127,9 @@ def main() -> None:
             elif args.extract == 'pixel':
                 sys.stdout.buffer.write(out.pixel_shader.code)
             elif args.extract == 'unpack':
-                mode = os.O_CREAT | os.O_EXCL | os.O_WRONLY
-                if args.overwrite:
-                    mode = os.O_CREAT | os.O_WRONLY
+                mode = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+                if not args.overwrite:
+                    mode |= os.O_EXCL
 
                 n = os.path.join(
                     args.dest,

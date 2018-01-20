@@ -68,7 +68,8 @@ class Program:
 
     def __del__(self):
         if self._res:
-            glDeleteProgram(self._res)
+            if glDeleteProgram:
+                glDeleteProgram(self._res)
             self._res = 0
 
     def res(self):
@@ -113,8 +114,10 @@ class Asset:
         self.vbo = glGenBuffers(1)
 
     def __del__(self):
-        glDeleteVertexArrays(1, numpy.array([self.vao]))
-        glDeleteBuffers(1, numpy.array([self.vbo]))
+        if glDeleteVertexArrays:
+            glDeleteVertexArrays(1, numpy.array([self.vao]))
+        if glDeleteBuffers:
+            glDeleteBuffers(1, numpy.array([self.vbo]))
 
     def __enter__(self):
         glBindVertexArray(self.vao)

@@ -4,6 +4,7 @@ import ui.gl_utils as utils
 from OpenGL.GL import *
 import glm
 
+
 def axes():
     asset = utils.Asset()
     shaders = []
@@ -108,7 +109,7 @@ def grid():
     asset.shaders = utils.Program(shaders)
 
     bounds = [-1, 1]
-    precision = 100
+    precision = 10
     steps = [
         i / precision
         for i in range(precision * bounds[0], precision * bounds[1], 1)
@@ -135,22 +136,110 @@ def grid():
         ])
         alpha = 0.1
         colors.extend([
-            # X
-            1, 0, 0, alpha,
-            1, 0, 0, alpha,
-            1, 0, 0, alpha,
-            1, 0, 0, alpha,
-            # Y
-            0, 1, 0, alpha,
-            0, 1, 0, alpha,
-            0, 1, 0, alpha,
-            0, 1, 0, alpha,
-            # Z
-            0, 0.5, 1, alpha,
-            0, 0.5, 1, alpha,
-            0, 0.5, 1, alpha,
-            0, 0.5, 1, alpha,
+            *((1, 0, 0, alpha) * 4), # X
+            *((0, 1, 0, alpha) * 4), # X
+            *((0, 0.5, 0, alpha) * 4), # Z
         ])
+    data = struct.pack(
+        '{}f'.format(len(vertices) + len(colors)),
+        *vertices,
+        *colors
+    )
+
+    with asset:
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            len(data),
+            data,
+            GL_STATIC_DRAW
+        )
+        glEnableVertexAttribArray(asset.shaders.attrib('vertPos'))
+        glEnableVertexAttribArray(asset.shaders.attrib('vertColor'))
+        glVertexAttribPointer(
+            index=asset.shaders.attrib('vertPos'),
+            size=3,
+            type=GL_FLOAT,
+            normalized=False,
+            stride=0,
+            pointer=None
+        )
+        glVertexAttribPointer(
+            index=asset.shaders.attrib('vertColor'),
+            size=4,
+            type=GL_FLOAT,
+            normalized=True,
+            stride=0,
+            pointer=c_void_p(sizeof(c_float)*len(vertices))
+        )
+
+    asset.draw_start = 0
+    asset.draw_count = int(len(vertices) / 3)
+    asset.draw_type = GL_LINES
+
+    instance = utils.Instance()
+    instance.asset = asset
+    return instance
+
+
+def quad_to_tris(vertices):
+    return [
+        *vertices[0],
+        *vertices[1],
+        *vertices[2],
+        *vertices[2],
+        *vertices[3],
+        *vertices[0],
+    ]
+
+
+def planes():
+    asset = utils.Asset()
+    shaders = []
+    shaders.append(utils.Shader.load_file(
+        'ui/colors.vs',
+        GL_VERTEX_SHADER
+    ))
+    shaders.append(utils.Shader.load_file(
+        'ui/colors.ps',
+        GL_FRAGMENT_SHADER
+    ))
+    asset.shaders = utils.Program(shaders)
+
+    bounds = [-1, 1]
+
+    vertices, colors = [], []
+    vertices.extend([
+        # X
+        *quad_to_tris((
+            (0, bounds[0], bounds[0]),
+            (0, bounds[0], bounds[1]),
+            (0, bounds[1], bounds[1]),
+            (0, bounds[1], bounds[0]),
+        )),
+        # Y
+        *quad_to_tris((
+            (bounds[0], 0, bounds[0]),
+            (bounds[0], 0, bounds[1]),
+            (bounds[1], 0, bounds[1]),
+            (bounds[1], 0, bounds[0]),
+        )),
+        # Z
+        *quad_to_tris((
+            (bounds[0], bounds[0], 0),
+            (bounds[0], bounds[1], 0),
+            (bounds[1], bounds[1], 0),
+            (bounds[1], bounds[0], 0),
+        )),
+    ])
+    alpha = 0.1
+    colors.extend([
+        # X
+        *([1, 0, 0, alpha] * 6),
+        # Y
+        *([0, 1, 0, alpha] * 6),
+        # Z
+        *([0, 0.5, 1, alpha] * 6),
+    ])
     data = struct.pack(
         '{}f'.format(len(vertices) + len(colors)),
         *vertices,
@@ -185,7 +274,7 @@ def grid():
 
     asset.draw_start = 0
     asset.draw_count = int(len(vertices) / 3)
-    asset.draw_type = GL_LINES
+    asset.draw_type = GL_TRIANGLES
 
     instance = utils.Instance()
     instance.asset = asset

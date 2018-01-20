@@ -25,6 +25,7 @@ class Scene(utils.Scene):
         self.triangle = shapes.triangle()
         self.instances.append(self.triangle)
         self.instances.append(shapes.axes())
+        self.instances.append(shapes.planes())
         self.instances.append(shapes.grid())
 
     def update(self, elapsed):
@@ -34,9 +35,14 @@ class Scene(utils.Scene):
             glm.vec3(0, 1, 0)
         )
 
-s = Scene()
-s.main()
 
-# PyOpenGL functions don't work when called during interpreter shutdown,
-# so make it call the destructors before it dies
-s = None
+def main():
+    scene = Scene()
+    scene.main()
+
+    # PyOpenGL functions don't work when called during interpreter shutdown,
+    # so make it call the destructors before it dies
+    scene = None
+
+if __name__ == '__main__':
+    main()

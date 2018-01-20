@@ -205,7 +205,7 @@ class Scene:
         glfw.terminate()
 
     def init(self):
-        raise NotImplementedError
+        pass
 
     def update(self, elapsed):
         pass

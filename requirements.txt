@@ -1,2 +1,11 @@
--e git+https://github.com/nhurman/libsquish#egg=squish&subdirectory=python
+## lib/ ##
 pillow
+
+# Waiting for Python3 PR
+-e git+https://github.com/nhurman/libsquish#egg=squish&subdirectory=python
+-e git+https://github.com/IlyaSkriblovsky/slpp@py3#egg=slpp
+
+## ui/ ##
+glfw
+PyOpenGL
+PyGLM

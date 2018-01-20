@@ -7,7 +7,7 @@ import struct
 import sys
 from typing import List, TypeVar
 
-from util import Reader, Printable, BinData
+from .util import Reader, Printable, BinData
 
 
 class HWEffect(Printable):

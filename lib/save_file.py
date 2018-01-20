@@ -2,11 +2,12 @@
 
 import argparse
 import base64
+from slpp import slpp as lua
 import struct
 import sys
 import zlib
 
-from util import Reader, Printable, BinData
+from .util import Reader, Printable, BinData
 
 
 def read_file(data: BinData) -> BinData:
@@ -38,6 +39,12 @@ def read_file(data: BinData) -> BinData:
         assert(len(final_data) == inflated_len)
 
     return final_data
+
+
+def parse_lua(data: BinData):
+    assert(data.startswith(b'return '))
+    d = data[7:].decode('utf-8')
+    return lua.decode(d)
 
 
 def write_file(data: BinData, encoded: bool=False) -> bytes:

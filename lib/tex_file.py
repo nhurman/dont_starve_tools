@@ -11,7 +11,7 @@ import sys
 from typing import List
 import zlib
 
-from util import Reader, Timed
+from .util import Reader, Timed
 # Timed.ENABLED = True
 
 

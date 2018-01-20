@@ -1,8 +1,0 @@
-Tested with Python 3.6.3 under macOS 10.12, but it should work on most platforms.
-
-Install dependencies with `pip install -r requirements.txt`
-
-
-```
-python -m lib.save_file ../saves/saveindex
-```

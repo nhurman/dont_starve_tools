@@ -91,6 +91,7 @@ class Program:
         assert(not self.enabled)
         self.enabled = True
         glUseProgram(self.res())
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         assert(self.enabled)
@@ -122,6 +123,7 @@ class Asset:
     def __enter__(self):
         glBindVertexArray(self.vao)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         glBindVertexArray(0)
@@ -220,33 +222,35 @@ class Scene:
             with instance.asset.shaders:
                 if instance.asset.before:
                     instance.asset.before()
-                glUniformMatrix4fv(
-                    instance.asset.shaders.uniform('projection'),
-                    1,
-                    False,
-                    projection
-                )
-                glUniformMatrix4fv(
-                    instance.asset.shaders.uniform('camera'),
-                    1,
-                    False,
-                    camera
-                )
 
-                transform = numpy.array(instance.transform).tobytes()
-                glUniformMatrix4fv(
-                    instance.asset.shaders.uniform('transform'),
-                    1,
-                    False,
-                    transform
-                )
-
-                with instance.asset:
-                    glDrawArrays(
-                        instance.asset.draw_type,
-                        instance.asset.draw_start,
-                        instance.asset.draw_count
+                if instance.asset.draw_type:
+                    glUniformMatrix4fv(
+                        instance.asset.shaders.uniform('projection'),
+                        1,
+                        False,
+                        projection
                     )
+                    glUniformMatrix4fv(
+                        instance.asset.shaders.uniform('camera'),
+                        1,
+                        False,
+                        camera
+                    )
+
+                    transform = numpy.array(instance.transform).tobytes()
+                    glUniformMatrix4fv(
+                        instance.asset.shaders.uniform('transform'),
+                        1,
+                        False,
+                        transform
+                    )
+
+                    with instance.asset:
+                        glDrawArrays(
+                            instance.asset.draw_type,
+                            instance.asset.draw_start,
+                            instance.asset.draw_count
+                        )
 
                 if instance.asset.after:
                     instance.asset.after()
@@ -282,7 +286,7 @@ class Texture:
 
     @staticmethod
     def from_file(path):
-        tex = PIL.Image.open(filename)
+        tex = PIL.Image.open(path)
         width, height, image = (
             tex.size[0],
             tex.size[1],

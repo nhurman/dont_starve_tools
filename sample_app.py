@@ -22,11 +22,14 @@ class Scene(utils.Scene):
             up=glm.vec3(0, 1, 0)
         )
 
+        # self.instances.append(shapes.planes())
         self.triangle = shapes.triangle()
         self.instances.append(self.triangle)
-        self.instances.append(shapes.axes())
-        self.instances.append(shapes.planes())
+
+        # Transparent at the end (and axes on top of everything)
         self.instances.append(shapes.grid())
+        self.instances.append(shapes.reset_depth())
+        self.instances.append(shapes.axes())
 
     def update(self, elapsed):
         self.triangle.transform = glm.rotate(

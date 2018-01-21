@@ -55,6 +55,7 @@ def colored_object(vertices, colors, draw_type):
     asset.draw_type = draw_type
     return utils.Instance(asset)
 
+
 def axes():
     bounds = [0, 1]
 
@@ -79,21 +80,11 @@ def axes():
         0, 1, 0, 1,
         0, 1, 0, 1,
         # Z
-        0, 0.5, 1, 1,
-        0, 0.5, 1, 1,
+        0, 0.3, 1, 1,
+        0, 0.3, 1, 1,
     ])
 
-    def before():
-        glDisable(GL_DEPTH_TEST)
-        glDisable(GL_BLEND)
-    def after():
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)
-
-    instance = colored_object(vertices, colors, GL_LINES)
-    instance.asset.before = before
-    instance.asset.after = after
-    return instance
+    return colored_object(vertices, colors, GL_LINES)
 
 
 def grid(bounds=[-1, 1], precision=0.1):
@@ -101,6 +92,7 @@ def grid(bounds=[-1, 1], precision=0.1):
         i * precision
         for i in range(int(bounds[0] / precision), int(bounds[1] / precision), 1)
     ]
+    steps.append(steps[-1] + steps[-1] - steps[-2])
 
     vertices, colors = [], []
     for i in steps:
@@ -121,11 +113,11 @@ def grid(bounds=[-1, 1], precision=0.1):
             i, bounds[0], 0,
             i, bounds[1], 0,
         ])
-        alpha = 0.1
+        alpha = 0.2
         colors.extend([
             *((1, 0, 0, alpha) * 4), # X
             *((0, 1, 0, alpha) * 4), # X
-            *((0, 0.5, 0, alpha) * 4), # Z
+            *((0, 0.3, 1, alpha) * 4), # Z
         ])
 
     return colored_object(vertices, colors, GL_LINES)
@@ -167,18 +159,26 @@ def planes(bounds=[-1, 1]):
             (bounds[1], bounds[0], 0),
         )),
     ])
-    alpha = 0.1
+    alpha = 1
     colors.extend([
         # X
         *([1, 0, 0, alpha] * 6),
         # Y
         *([0, 1, 0, alpha] * 6),
         # Z
-        *([0, 0.5, 1, alpha] * 6),
+        *([0, 0, 1, alpha] * 6),
     ])
 
-    return colored_object(vertices, colors, GL_TRIANGLES)
+    def before():
+        glDisable(GL_DEPTH_TEST)
+    def after():
+        glEnable(GL_DEPTH_TEST)
 
+    instance = colored_object(vertices, colors, GL_TRIANGLES)
+    # instance.asset.before = before
+    # instance.asset.after = after
+    instance.transform = glm.scale(glm.mat4(), glm.vec3(0.2, 0.2, 0.2))
+    return instance
 
 def triangle():
     vertices = [
@@ -193,3 +193,18 @@ def triangle():
     ]
 
     return colored_object(vertices, colors, GL_TRIANGLES)
+
+
+class empty_context():
+    def __enter__(self):
+        return self
+    def __exit__(self, a, b, c):
+        return
+
+
+def reset_depth():
+    asset = utils.Asset()
+    asset.draw_type = None
+    asset.before = lambda: glClear(GL_DEPTH_BUFFER_BIT)
+    asset.shaders = empty_context()
+    return utils.Instance(asset)

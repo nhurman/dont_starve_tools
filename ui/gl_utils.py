@@ -231,8 +231,9 @@ class Scene:
 
         if glfw.CURSOR_NORMAL == glfw.get_input_mode(self.window, glfw.CURSOR):
             if glfw.get_mouse_button(self.window, glfw.MOUSE_BUTTON_LEFT):
-                glfw.set_cursor_pos(self.window, 0, 0)
                 glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_DISABLED)
+                glfw.set_cursor_pos(self.window, 0, 0)
+
         else:
             x, y = glfw.get_cursor_pos(self.window)
             self.camera.offset_orientation(mouse_sensitivity * x, mouse_sensitivity * y)

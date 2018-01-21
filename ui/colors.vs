@@ -1,4 +1,5 @@
-#version 150
+#version 330 core
+
 uniform mat4 projection; // P
 uniform mat4 view; // V
 uniform mat4 transform; // ?

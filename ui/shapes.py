@@ -169,16 +169,10 @@ def planes(bounds=[-1, 1]):
         *([0, 0, 1, alpha] * 6),
     ])
 
-    def before():
-        glDisable(GL_DEPTH_TEST)
-    def after():
-        glEnable(GL_DEPTH_TEST)
-
     instance = colored_object(vertices, colors, GL_TRIANGLES)
-    # instance.asset.before = before
-    # instance.asset.after = after
     instance.transform = glm.scale(glm.mat4(), glm.vec3(0.2, 0.2, 0.2))
     return instance
+
 
 def triangle():
     vertices = [

@@ -10,17 +10,7 @@ class Scene(utils.Scene):
         super().__init__('dont_starve_tools')
 
     def init(self):
-        self.projection = glm.perspective(
-            glm.radians(60),
-            float(self.screen_x)/self.screen_y,
-            0.1,
-            10
-        )
-        self.camera = glm.lookAt(
-            eye=glm.vec3(1.5, 1.5, 1.5),
-            center=glm.vec3(0, 0, 0),
-            up=glm.vec3(0, 1, 0)
-        )
+        super().init()
 
         # self.instances.append(shapes.planes())
         self.triangle = shapes.triangle()
@@ -32,6 +22,7 @@ class Scene(utils.Scene):
         self.instances.append(shapes.axes())
 
     def update(self, elapsed):
+        super().update(elapsed)
         self.triangle.transform = glm.rotate(
             self.triangle.transform,
             glm.radians(elapsed * 180),

@@ -1,8 +1,8 @@
-from OpenGL.GL import *
-from OpenGL.GLU import *
 import glfw
 import glm
 import numpy
+from OpenGL.GL import *
+from OpenGL.GLU import *
 import PIL.Image
 
 
@@ -129,9 +129,9 @@ class Asset:
 
 
 class Instance:
-    def __init__(self):
-        self.asset = None
-        self.transform = glm.mat4()
+    def __init__(self, asset, transform=glm.mat4()):
+        self.asset = asset
+        self.transform = transform
 
 
 def error_callback(*args, **kwargs):
@@ -290,4 +290,3 @@ class Texture:
         )
         # tex.show()
         return Texture(width, height, image)
-

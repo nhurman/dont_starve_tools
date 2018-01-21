@@ -1,8 +1,8 @@
-import struct
-from typing import Union
 from json import JSONEncoder
+import struct
 import time
-from typing import Sized, TypeVar, List, Generic
+from typing import Generic, TypeVar, Union
+
 
 BinData = Union[bytes, memoryview]
 T = TypeVar('T')
@@ -65,7 +65,7 @@ class Printable:
                 attr = getattr(self, k)
                 if callable(attr):
                     continue
-                if type(attr) == memoryview:
+                if isinstance(attr, memoryview):
                     attr = attr.tobytes()
                 out[k] = attr
         return repr(out)
@@ -73,7 +73,7 @@ class Printable:
     def to_json(self, **kwargs) -> str:
         class Encoder(JSONEncoder):
             def default(self, o):
-                if type(o) == memoryview:
+                if isinstance(o, memoryview):
                     return o.tobytes().decode('utf-8')
                 if isinstance(o, Printable):
                     return {

@@ -1,11 +1,12 @@
 from ctypes import *
-import struct
-import ui.gl_utils as utils
-from OpenGL.GL import *
 import glm
+from OpenGL.GL import *
+import struct
+
+from . import gl_utils as utils
 
 
-def axes():
+def colored_object(vertices, colors, draw_type):
     asset = utils.Asset()
     shaders = []
     shaders.append(utils.Shader.load_file(
@@ -17,33 +18,6 @@ def axes():
         GL_FRAGMENT_SHADER
     ))
     asset.shaders = utils.Program(shaders)
-
-    bounds = [0, 1]
-
-    # Axes
-    vertices, colors = [], []
-    vertices.extend([
-        # X
-        bounds[0], 0, 0,
-        bounds[1], 0, 0,
-        # Y
-        0, bounds[0], 0,
-        0, bounds[1], 0,
-        # Z
-        0, 0, bounds[0],
-        0, 0, bounds[1],
-    ])
-    colors.extend([
-        # X
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        # Y
-        0, 1, 0, 1,
-        0, 1, 0, 1,
-        # Z
-        0, 0.5, 1, 1,
-        0, 0.5, 1, 1,
-    ])
     data = struct.pack(
         '{}f'.format(len(vertices) + len(colors)),
         *vertices,
@@ -78,7 +52,36 @@ def axes():
 
     asset.draw_start = 0
     asset.draw_count = int(len(vertices) / 3)
-    asset.draw_type = GL_LINES
+    asset.draw_type = draw_type
+    return utils.Instance(asset)
+
+def axes():
+    bounds = [0, 1]
+
+    # Axes
+    vertices, colors = [], []
+    vertices.extend([
+        # X
+        bounds[0], 0, 0,
+        bounds[1], 0, 0,
+        # Y
+        0, bounds[0], 0,
+        0, bounds[1], 0,
+        # Z
+        0, 0, bounds[0],
+        0, 0, bounds[1],
+    ])
+    colors.extend([
+        # X
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        # Y
+        0, 1, 0, 1,
+        0, 1, 0, 1,
+        # Z
+        0, 0.5, 1, 1,
+        0, 0.5, 1, 1,
+    ])
 
     def before():
         glDisable(GL_DEPTH_TEST)
@@ -87,32 +90,16 @@ def axes():
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
 
-    asset.before = before
-    asset.after = after
-
-    instance = utils.Instance()
-    instance.asset = asset
+    instance = colored_object(vertices, colors, GL_LINES)
+    instance.asset.before = before
+    instance.asset.after = after
     return instance
 
 
-def grid():
-    asset = utils.Asset()
-    shaders = []
-    shaders.append(utils.Shader.load_file(
-        'ui/colors.vs',
-        GL_VERTEX_SHADER
-    ))
-    shaders.append(utils.Shader.load_file(
-        'ui/colors.ps',
-        GL_FRAGMENT_SHADER
-    ))
-    asset.shaders = utils.Program(shaders)
-
-    bounds = [-1, 1]
-    precision = 10
+def grid(bounds=[-1, 1], precision=0.1):
     steps = [
-        i / precision
-        for i in range(precision * bounds[0], precision * bounds[1], 1)
+        i * precision
+        for i in range(int(bounds[0] / precision), int(bounds[1] / precision), 1)
     ]
 
     vertices, colors = [], []
@@ -140,45 +127,8 @@ def grid():
             *((0, 1, 0, alpha) * 4), # X
             *((0, 0.5, 0, alpha) * 4), # Z
         ])
-    data = struct.pack(
-        '{}f'.format(len(vertices) + len(colors)),
-        *vertices,
-        *colors
-    )
 
-    with asset:
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            len(data),
-            data,
-            GL_STATIC_DRAW
-        )
-        glEnableVertexAttribArray(asset.shaders.attrib('vertPos'))
-        glEnableVertexAttribArray(asset.shaders.attrib('vertColor'))
-        glVertexAttribPointer(
-            index=asset.shaders.attrib('vertPos'),
-            size=3,
-            type=GL_FLOAT,
-            normalized=False,
-            stride=0,
-            pointer=None
-        )
-        glVertexAttribPointer(
-            index=asset.shaders.attrib('vertColor'),
-            size=4,
-            type=GL_FLOAT,
-            normalized=True,
-            stride=0,
-            pointer=c_void_p(sizeof(c_float)*len(vertices))
-        )
-
-    asset.draw_start = 0
-    asset.draw_count = int(len(vertices) / 3)
-    asset.draw_type = GL_LINES
-
-    instance = utils.Instance()
-    instance.asset = asset
-    return instance
+    return colored_object(vertices, colors, GL_LINES)
 
 
 def quad_to_tris(vertices):
@@ -192,21 +142,7 @@ def quad_to_tris(vertices):
     ]
 
 
-def planes():
-    asset = utils.Asset()
-    shaders = []
-    shaders.append(utils.Shader.load_file(
-        'ui/colors.vs',
-        GL_VERTEX_SHADER
-    ))
-    shaders.append(utils.Shader.load_file(
-        'ui/colors.ps',
-        GL_FRAGMENT_SHADER
-    ))
-    asset.shaders = utils.Program(shaders)
-
-    bounds = [-1, 1]
-
+def planes(bounds=[-1, 1]):
     vertices, colors = [], []
     vertices.extend([
         # X
@@ -240,60 +176,11 @@ def planes():
         # Z
         *([0, 0.5, 1, alpha] * 6),
     ])
-    data = struct.pack(
-        '{}f'.format(len(vertices) + len(colors)),
-        *vertices,
-        *colors
-    )
 
-    with asset:
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            len(data),
-            data,
-            GL_STATIC_DRAW
-        )
-        glEnableVertexAttribArray(asset.shaders.attrib('vertPos'))
-        glEnableVertexAttribArray(asset.shaders.attrib('vertColor'))
-        glVertexAttribPointer(
-            index=asset.shaders.attrib('vertPos'),
-            size=3,
-            type=GL_FLOAT,
-            normalized=GL_FALSE,
-            stride=0,
-            pointer=None
-        )
-        glVertexAttribPointer(
-            index=asset.shaders.attrib('vertColor'),
-            size=4,
-            type=GL_FLOAT,
-            normalized=GL_FALSE,
-            stride=0,
-            pointer=c_void_p(sizeof(c_float)*len(vertices))
-        )
-
-    asset.draw_start = 0
-    asset.draw_count = int(len(vertices) / 3)
-    asset.draw_type = GL_TRIANGLES
-
-    instance = utils.Instance()
-    instance.asset = asset
-    return instance
+    return colored_object(vertices, colors, GL_TRIANGLES)
 
 
 def triangle():
-    tr = utils.Asset()
-    shaders = []
-    shaders.append(utils.Shader.load_file(
-        'ui/colors.vs',
-        GL_VERTEX_SHADER
-    ))
-    shaders.append(utils.Shader.load_file(
-        'ui/colors.ps',
-        GL_FRAGMENT_SHADER
-    ))
-    tr.shaders = utils.Program(shaders)
-
     vertices = [
         0, 0, 0,
         1, 0, 0,
@@ -304,52 +191,5 @@ def triangle():
         0, 1, 0, 1,
         0, 0, 1, 1,
     ]
-    data = struct.pack(
-        '{}f'.format(len(vertices) + len(colors)),
-        *vertices,
-        *colors
-    )
 
-    with tr:
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            len(data),
-            data,
-            GL_STATIC_DRAW
-        )
-        glEnableVertexAttribArray(tr.shaders.attrib('vertPos'))
-        glEnableVertexAttribArray(tr.shaders.attrib('vertColor'))
-        glVertexAttribPointer(
-            index=tr.shaders.attrib('vertPos'),
-            size=3,
-            type=GL_FLOAT,
-            normalized=GL_FALSE,
-            stride=0,
-            pointer=None
-        )
-        glVertexAttribPointer(
-            index=tr.shaders.attrib('vertColor'),
-            size=4,
-            type=GL_FLOAT,
-            normalized=GL_TRUE,
-            stride=0,
-            pointer=c_void_p(sizeof(c_float)*len(vertices))
-        )
-
-    tr.draw_start = 0
-    tr.draw_count = 3
-    tr.draw_type = GL_TRIANGLES
-
-    tra = glm.translate(
-        glm.mat4(),
-        glm.vec3(0, 0, 0)
-    )
-    sca = glm.scale(
-        glm.mat4(),
-        glm.vec3(1, 1, 1)
-    )
-
-    instance = utils.Instance()
-    instance.asset = tr
-    instance.transform = tra * glm.mat4()
-    return instance
+    return colored_object(vertices, colors, GL_TRIANGLES)

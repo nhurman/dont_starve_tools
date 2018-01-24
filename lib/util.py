@@ -70,17 +70,35 @@ class Printable:
                 out[k] = attr
         return repr(out)
 
+    def json_value(self):
+        raise NotImplementedError()
+
     def to_json(self, **kwargs) -> str:
         class Encoder(JSONEncoder):
             def default(self, o):
                 if isinstance(o, memoryview):
-                    return o.tobytes().decode('utf-8')
+                    try:
+                        return o.tobytes().decode('utf-8')
+                    except UnicodeDecodeError:
+                        return repr(o.tobytes())
+                if isinstance(o, bytes):
+                    try:
+                        return o.decode('utf-8')
+                    except UnicodeDecodeError:
+                        return repr(o)
+
                 if isinstance(o, Printable):
-                    return {
-                        k:v for k,v in o.__dict__.items()
-                        if k not in o.__noprint__
-                    }
-                return o.__dict__
+                    try:
+                        return o.json_value()
+                    except NotImplementedError:
+                        return {
+                            k:v for k,v in o.__dict__.items()
+                            if k not in o.__noprint__
+                        }
+                try:
+                    return o.__dict__
+                except AttributeError:
+                    return super().default(o)
         return Encoder(**kwargs).encode(self)
 
 
@@ -102,3 +120,13 @@ class Timed:
             return
         elapsed = time.time() - self.start
         print(f'Elapsed[{self.name}]: {elapsed}s')
+
+
+class Struct(Printable):
+    @staticmethod
+    def read(reader):
+        raise NotImplementedError()
+
+    @staticmethod
+    def write(writer):
+        raise NotImplementedError()

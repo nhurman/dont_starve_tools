@@ -1,0 +1,110 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File:
+//   Authors:
+//   Version:
+//   Purpose:
+//  Category:
+// File Mask:
+//  ID Bytes:
+//   History:
+//------------------------------------------------
+LittleEndian();
+
+typedef struct {
+    uint32 len;
+    char str[len];
+} string_t <read=read_string>;
+string read_string(string_t& o) {
+    string out;
+    SPrintf(out, "%.*s", o.len, o.str);
+    return out;
+}
+
+
+char magic[4];  // ANIM
+uint32 version; // 4
+uint32 n_elements;
+uint32 n_frames;
+uint32 n_events;
+uint32 n_animations;
+
+typedef struct {
+    uint32 symbol_hash;
+    uint32 symbol_frame;
+    uint32 folder_hash;
+    struct {
+        float a;
+        float b;
+        float c;
+        float d;
+        float tx;
+        float ty;
+        float z;
+    } mat;
+} element_t;
+
+typedef struct {
+    float x;
+    float y;
+    float w;
+    float h;
+    uint32 n_events;
+    struct {
+        local uint32 i;
+        for (i = 0; i < n_events; ++i) {
+            uint32 hash;
+        }
+    } eventHashes;
+    uint32 n_elements;
+    struct {
+        local uint32 i;
+        for (i = 0; i < n_elements; ++i) {
+            element_t element;
+        }
+    } elements;
+} frame_t;
+
+typedef struct {
+    string_t name;
+    uchar valid_facings;
+    uint32 root_symbol;
+    float frame_rate;
+    uint32 n_frames;
+    struct {
+        local uint32 i;
+        for (i = 0; i < n_frames; ++i) {
+            frame_t frame;
+        }
+    } frames;
+} animation_t <read=read_animation>;
+string read_animation(animation_t& o) {
+    return read_string(o.name);
+};
+
+struct {
+    local uint32 i;
+    for (i = 0; i < n_animations; ++i) {
+        animation_t animation;
+    }
+} animations;
+
+typedef struct {
+    uint32 hash;
+    string_t str;
+} hashedString_t <read=read_hashedStr>;
+string read_hashedStr(hashedString_t& o) {
+    string out;
+    SPrintf(out, "[%u] %s", o.hash, read_string(o.str));
+    return out;
+}
+
+uint32 n_hashedStrings;
+struct {
+    local uint32 i;
+    for (i = 0 ; i < n_hashedStrings; ++i) {
+        hashedString_t str;
+    }
+} hashedStrings;
+

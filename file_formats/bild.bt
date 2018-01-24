@@ -1,0 +1,94 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File:
+//   Authors:
+//   Version:
+//   Purpose:
+//  Category:
+// File Mask:
+//  ID Bytes:
+//   History:
+//------------------------------------------------
+LittleEndian();
+
+typedef struct {
+    uint32 len;
+    char str[len];
+} string_t <read=read_string>;
+string read_string(string_t& o) {
+    string out;
+    SPrintf(out, "%.*s", o.len, o.str);
+    return out;
+}
+
+char magic[4];  // BILD
+uint32 version; // 6
+uint32 n_symbols;
+uint32 n_frames;
+string_t name;
+uint32 n_materials;
+struct {
+    local uint32 i;
+    for (i = 0; i < n_materials; ++i) {
+        string_t name;
+    }
+} materials;
+
+typedef struct {
+    uint32 hash;
+    uint32 n_frames;
+    struct {
+        uint32 num;
+        uint32 duration;
+        struct {
+            float x;
+            float y;
+            float w;
+            float h;
+        } bbox;
+        uint32 alpha_index;
+        uint32 n_alpha;
+    } frames[n_frames];
+} symbol_t <read=read_symbol>;
+string read_symbol(symbol_t& o) {
+    string out;
+    SPrintf(out, "[%u]", o.hash);
+    return out;
+}
+
+struct {
+    local uint32 i;
+    for (i = 0; i < n_symbols; ++i) {
+        symbol_t symbol;
+    }
+} symbols;
+
+uint32 n_vertices;
+struct {
+    float x;
+    float y;
+    float z;
+    float u;
+    float v;
+    float w;
+} vertices[n_vertices];
+
+typedef struct {
+    uint32 hash;
+    string_t str;
+} hashedString_t <read=read_hashedStr>;
+string read_hashedStr(hashedString_t& o) {
+    string out;
+    SPrintf(out, "[%u] %s", o.hash, read_string(o.str));
+    return out;
+}
+
+uint32 n_hashedStrings;
+struct {
+    local uint32 i;
+    for (i = 0 ; i < n_hashedStrings; ++i) {
+        hashedString_t str;
+    }
+} hashedStrings;
+

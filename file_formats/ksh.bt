@@ -1,0 +1,75 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File:
+//   Authors:
+//   Version:
+//   Purpose:
+//  Category:
+// File Mask:
+//  ID Bytes:
+//   History:
+//------------------------------------------------
+LittleEndian();
+
+typedef struct {
+    uint32 len;
+    char str[len];
+} string_t <read=read_string>;
+string read_string(string_t& str)
+{
+    string s;
+    if (str.len > 0)
+        SPrintf(s, "%.*s", str.len, str.str);
+    return s;
+}
+
+typedef struct {
+    string_t name;
+    string_t unk1;
+    uint32 flags;
+    uint32 values_per_item;
+
+    if (!(42 <= flags && flags <= 45)) {
+        uint32 n_defaults;
+        float defaults[n_defaults];
+    }
+} parameter_t <read=read_parameter>;
+string read_parameter(parameter_t& param)
+{
+    return read_string(param.name);
+}
+
+typedef struct {
+    string_t name;
+    string_t code;
+} shader_t <read=read_shader>;
+string read_shader(shader_t& sh)
+{
+    return read_string(sh.name);
+}
+
+typedef struct {
+    uint32 n_vertex_uniforms;
+    uint32 vertex_uniforms[n_vertex_uniforms];
+    uint32 n_pixel_uniforms;
+    uint32 pixel_uniforms[n_pixel_uniforms];
+} uniforms_t;
+
+typedef struct {
+    string_t effectName;
+    uint32 n_parameters;
+
+    struct {
+        local int i;
+        for (i = 0; i < n_parameters; ++i) {
+            parameter_t parameter;
+        }
+    } parameters;
+
+    shader_t vertexShader;
+    shader_t pixelShader;
+    uniforms_t uniforms;
+} ksh_t;
+
+ksh_t ksh;

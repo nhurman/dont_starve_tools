@@ -131,9 +131,9 @@ class Asset:
 
 
 class Instance:
-    def __init__(self, asset, transform=glm.mat4()):
+    def __init__(self, asset, transform=None):
         self.asset = asset
-        self.transform = transform
+        self.transform = transform if transform else glm.mat4(1)
 
 
 def error_callback(*args, **kwargs):
@@ -290,8 +290,11 @@ class Scene:
         #     )
         # ).tobytes()
 
-        projection = numpy.array(self.camera.projection()).tobytes()
-        view = numpy.array(self.camera.view()).tobytes()
+        projection_t = tuple(tuple(x) for x in self.camera.projection())
+        projection = numpy.float32(projection_t).tobytes()
+
+        view_t = tuple(tuple(x) for x in self.camera.view())
+        view = numpy.float32(view_t).tobytes()
 
         for instance in self.instances:
             with instance.asset.shaders:
@@ -311,7 +314,8 @@ class Scene:
                         False,
                         view
                     )
-                    transform = numpy.array(instance.transform).tobytes()
+                    transform_t = tuple(tuple(x) for x in instance.transform)
+                    transform = numpy.float32(transform_t).tobytes()
                     glUniformMatrix4fv(
                         instance.asset.shaders.uniform('transform'),
                         1,
@@ -382,7 +386,7 @@ class FreeflyCamera:
         self.aspect_ratio = 4.0/3
 
     def orientation(self):
-        ori = glm.mat4()
+        ori = glm.mat4(1)
         ori = glm.rotate(ori, glm.radians(self.pitch), glm.vec3(1, 0, 0))
         ori = glm.rotate(ori, glm.radians(self.yaw), glm.vec3(0, 1, 0))
         return ori
@@ -390,7 +394,7 @@ class FreeflyCamera:
     def look_at(self, position):
         assert not (position == self.position)
         direction = glm.normalize(position - self.position)
-        self.pitch = glm.degrees(glm.asin(-direction.y))
+        self.pitch = glm.degrees(glm.asin(glm.tvec2(-direction.y))[0])
         self.yaw = -glm.degrees(glm.atan(-direction.x, -direction.z))
         self.normalize_angles()
 
@@ -418,7 +422,7 @@ class FreeflyCamera:
         )
 
     def view(self):
-        return self.orientation() * glm.translate(glm.mat4(), -self.position)
+        return self.orientation() * glm.translate(glm.mat4(1), -self.position)
 
     def offset_orientation(self, yaw, pitch):
         self.yaw += yaw

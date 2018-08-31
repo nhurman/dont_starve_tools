@@ -170,7 +170,7 @@ def planes(bounds=[-1, 1]):
     ])
 
     instance = colored_object(vertices, colors, GL_TRIANGLES)
-    instance.transform = glm.scale(glm.mat4(), glm.vec3(0.2, 0.2, 0.2))
+    instance.transform = glm.scale(glm.mat4(1), glm.vec3(0.2, 0.2, 0.2))
     return instance
 
 
